@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage{amsmath}
 
-\title{NUMT Risk Confidence Intervals}
+\title{Confidence Intervals for Risk of Mitochondrial Diseases Inferred from NUMT Sequence Data}
 \date{}
 
 \begin{document}
@@ -9,78 +9,145 @@
 \maketitle
 
 \section*{Problem Setup}
-This note documents the method used to calculate 95\% confidence intervals for the risk of mitochondrial diseases caused by nuclear gene mutations, as inferred from nuclear mitochondrial (NUMT) gene sequence data.
+This note documents the method used to calculate and evaluate 95\% confidence intervals for the risk of mitochondrial diseases caused by nuclear gene mutations, as inferred from nuclear mitochondrial DNA (NUMT) sequence data.
 
-The problem setup is as follows:
+\begin{enumerate}
+
+\item Definitions:
 \begin{itemize}
-    \item You have \( k \) loci.
-    \item For each locus \( i \), you have:
+    \item Gene copy: One of the two copies of a gene present at a locus in a diploid organism.
+    \item Non-wild-type variant: Any variant of a gene that differs from the wild-type (normal) sequence.
+    \item Biallelic non-wild-type variants: Both gene copies at a locus carry non-wild-type variants, which can be identical (homozygous) or different (compound heterozygous).
+\end{itemize}
+
+\item Data and assumptions:
+\begin{itemize}
+    \item We have \( k \) loci in the nuclear genome linked to mitochondrial disease.
+    \item For each locus \( i \), we have:
     \begin{itemize}
-        \item \( n_i \) trials,
-        \item \( s_i \) observed non-wild-type alleles,
-        \item An estimated probability \( \hat{p}_i = \frac{s_i}{n_i} \).
+        \item \( n_i \) observations, i.e. gene copies examined. These have been obtained from a population of $\frac{n_i}{2}$ individual healthy older adults, each contributing two gene copies. In practice, in the dataset in question, $n_i$ is identical for all loci $i$.
+        \item \( s_i \) observed occurrences of any non-wild-type variant,
+        \item An estimated probability \( \hat{p}_i = \frac{s_i}{n_i} \), representing the probability that a gene copy at locus $i$ is a non-wild-type variant.
     \end{itemize}
-    \item The probability \( P \) of having double non-wild-type alleles at any of the \( k \) loci is (one minus the probability of being unaffected):
+    \item Assumptions:
+    \begin{itemize}
+    \item The loci are independent of each other.
+    \item Allele frequencies are in Hardy-Weinberg equilibrium.
+    \end{itemize}
+\end{itemize}
+\item Calculating the probability $P$:
+\begin{itemize}
+\item Individuals with biallelic non-wild-type variants are likely to be affected by mitochondrial disease.
+\item The probability of being unaffected at locus $i$ is $1 - p_i^2$.
+\item Therefore, the probability \( P \) of being affected due to biallelic non-wild-type variants at any of the \( k \) loci is:
     \[
     P = 1 - \prod_{i=1}^{k} (1 - p_i^2)
     \]
+\item We compute an approximate confidence interval on the risk of having biallelic non-wild-type variants at any of $k$ nuclear genome loci using the delta method and test this using bootstrap resampling.
+\end{itemize}
+\end{enumerate}
+
+\section*{Delta Method}
+\begin{enumerate}
+    \item Confidence Interval for \( \hat p_i \):
+\begin{itemize}
+    \item Use the Clopper-Pearson method to construct an exact confidence interval for each \( \hat{p}_i \).
 \end{itemize}
 
-We compute the confidence interval on the risk of having double non-wild-type alleles at any of $k$ nuclear genome loci using the delta method.
+\item Confidence Interval for \( \hat p_i^2 \)
+\begin{itemize}
+    \item Since squaring is a monotonic function on  \( \left[ 0, 1 \right] \), %preserving the confidence level,
+    square the endpoints of the confidence interval for \( \hat p_i \) to obtain the interval for \( \hat p_i^2 \).
+\end{itemize}
 
-\section*{Step 1: Confidence Interval for \( p_i \)}
-
-The Clopper-Pearson method can be used to construct an exact confidence interval for the binomial proportion \( p_i \). For each locus \( i \), the estimate \( \hat{p}_i \) is calculated as \( \hat{p}_i = \frac{s_i}{n_i} \). The confidence interval for \( p_i \) is given by:
-\[
-\text{CI}_{95\%}(p_i) = \left[ L_i, U_i \right]
-\]
-where \( L_i \) and \( U_i \) are the lower and upper bounds of the Clopper-Pearson confidence interval for \( p_i \) based on the observed successes \( s_i \) and trials \( n_i \).
-
-\section*{Step 2: Confidence Interval for \( p_i^2 \)}
-
-Given that the probability \( p_i \) lies within the interval \( \left[ L_i, U_i \right] \), the confidence interval for \( p_i^2 \) can be derived by squaring the endpoints:
-\[
-\text{CI}_{95\%}(p_i^2) = \left[ L_i^2, U_i^2 \right]
-\]
-This interval is valid because the squaring function is a continuous and monotonic bijection on the interval \( [0,1] \), preserving the confidence level.
-
-\section*{Step 3: Compute the Probability \( P \)}
-
-First compute the probability \( P \) using the estimated probabilities \( \hat{p}_i \):
-
+\item Compute the Probability \( P \)
+\begin{itemize}
+    \item Compute the probability \( P \) using the estimated probabilities \( \hat{p}_i \):
 \[
 P = 1 - \prod_{i=1}^{k} (1 - \hat{p}_i^2)
 \]
+\end{itemize}
 
-\section*{Step 4: Apply the Delta Method}
-
-For each locus \( i \), compute the partial derivative of \( P \) with respect to \( \hat{p}_i \):
+\item Apply the Delta Method:
+\begin{itemize}
+\item Compute the partial derivative of \( P \) with respect to each \( \hat{p}_i \):
 \[
 \frac{\partial P}{\partial \hat{p}_i} = 2 \hat{p}_i \cdot \prod_{j \neq i} (1 - \hat{p}_j^2)
 \]
 This derivative reflects how \( P \) changes with respect to each \( \hat{p}_i \).
 
-Approximate the variance of \( P \) by summing the contributions from each \( \hat{p}_i \):
+\item Approximate the variance of \( P \) by summing estimates of the contributions from each \( \hat{p}_i \):
 \[
 \text{Var}(P) \approx \sum_{i=1}^{k} \left(\frac{\partial P}{\partial \hat{p}_i}\right)^2 \cdot \text{Var}(\hat{p}_i)
 \]
 where
 \[
-\text{Var}(\hat{p}_i) = \frac{\hat{p}_i(1 - \hat{p}_i)}{n_i - 1}
+\text{Var}(\hat{p}_i) = \frac{\hat{p}_i(1 - \hat{p}_i)}{n_i}
 \]
+\end{itemize}
 
-The standard deviation of \( P \) is the square root of the variance:
+\item Construct the Confidence Interval for \( P \):
+\begin{itemize}
+
+\item Calculate the standard deviation of $ P $:
 \[
 \sigma_P = \sqrt{\text{Var}(P)}
 \]
 
-\section*{Step 5: Construct the Confidence Interval for \( P \)}
-
-Assuming \( P \) follows a normal distribution (reasonable under the Central Limit \\
-Theorem for large \( n_i \)), a \( 95\% \) confidence interval for \( P \) can be constructed as:
-
+\item Assuming \( P \) follows a normal distribution---reasonable for large \( n_i \) or \( k \)---a \( 95\% \) confidence interval for \( P \) can be constructed as:
 \[
-\text{CI}_{95\%} = \left[ P - 1.96 \cdot \sigma_P, P + 1.96 \cdot \sigma_P \right]
+    \text{CI}_{95\%} = \left[ P - z \cdot \sigma_P, P + z \cdot \sigma_P \right]
 \]
+where \(z \) is the $z$-score for the desired confidence level (1.96 for 95\%).
+\end{itemize}
+
+\end{enumerate}
+
+\section*{Limitations of the approach}
+
+While the Delta method is useful for approximating variances, its application in our analysis faces challenges, due to the nature of our data:
+
+\begin{enumerate}
+
+\item \textbf{Violation of Normality Assumptions}
+
+Many loci have very low counts of non-wild-type variants (1 or 2 out of \(\sim\)5,000 gene copies), resulting in extremely small estimated probabilities (\( \hat{p}_i \)). The sampling distribution of \( \hat{p}_i \) is skewed, violating the normality assumption required by the Delta method. This can lead to unreliable variance estimates and confidence intervals.
+
+\item \textbf{Nonlinearity and Boundedness of \( P \)}
+
+The function \( P = 1 - \prod_{i=1}^{k} (1 - \hat{p}_i^2) \) is nonlinear, and \( P \) is bounded between 0 and 1. The Delta method's reliance on linear approximation and normal distribution may not adequately capture the behavior of \( P \), especially when \( P \) is near 0. This could in principle result in confidence intervals that extend beyond [0,1] or do not reflect the true variability of \( P \).
+
+\end{enumerate}
+
+Mitigating these issues is the fact that loci with higher variant counts contribute most to the overall risk \( P \). Nevertheless, inaccuracies at loci with low variant counts could cumulatively affect the confidence interval. It is hard to assess the extent to which this might impact the derived confidence interval {\it a priori}. The most direct way to check this is to use a bootstrap analysis.
+
+\subsection*{Bootstrap Approach Rationale}
+
+The bootstrap method is nonparametric and does not rely on normality assumptions or large sample sizes. It can accommodate the nonlinear nature of \( P \) and effectively handle small counts and skewed distributions by empirically estimating the sampling distribution of \( P \). By resampling from the observed data, the bootstrap approach incorporates variability from all loci, ensuring that the confidence interval reflects the combined uncertainty in our risk estimate.
+
+\subsection*{Implementation of the Bootstrap Approach}
+
+We implement the bootstrap method as follows:
+
+\begin{itemize}
+    \item For each locus \( i \), generate bootstrap samples by resampling \( n_i \) observations with replacement from the original data.
+    \item For each bootstrap sample, calculate the estimated probabilities \( \hat{p}_i^* \) and compute \( P^* = 1 - \prod_{i=1}^{k} (1 - (\hat{p}_i^*)^2) \).
+    \item Repeat this process many times (we use 10,000 iterations) to build an empirical distribution of \( P^* \).
+    \item Determine the 95\% confidence interval for \( P \) using the 2.5th and 97.5th percentiles of the bootstrap distribution.
+\end{itemize}
+
+\section*{Results}
+
+We calculate the probability \( P \) of individuals having biallelic non-wild-type variants at any of the \( k \) loci, representing the estimated risk of mitochondrial diseases caused by nuclear gene mutations inferred from NUMT sequence data.
+
+\begin{itemize}
+\item Using the Delta method, the estimated probability corresponds to approximately \textbf{99.5 affected individuals per 100,000 people}. The 95\% confidence interval for \( P \) obtained via the Delta method ranges from \textbf{84.8 to 114.2 affected individuals per 100,000 people}.
+
+\item Applying the bootstrap method, the estimated probability corresponds to approximately \textbf{104.0 affected individuals per 100,000 people}. The 95\% confidence interval for \( P \) from the bootstrap method ranges from \textbf{89.7 to 119.9 affected individuals per 100,000 people}.
+\end{itemize}
+
+\subsection*{Interpretation}
+
+The results from the Delta method and the bootstrap method are similar, with overlapping confidence intervals. This similarity suggests that, despite the limitations associated with the Delta method in the context of low variant counts, it provides an acceptable approximation for the overall risk estimation.
 
 \end{document}

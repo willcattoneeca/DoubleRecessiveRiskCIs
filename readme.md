@@ -1,2 +1,4 @@
 # DoubleRecessiveRiskCIs
-An R script and documentation of the method used to calculate 95% confidence intervals for risk of mitochondrial diseases caused by nuclear gene mutations
+Scripts and documentation of the method used to calculate 95% confidence intervals for risk of mitochondrial diseases caused by nuclear gene mutations.
+
+We calculated the probability 𝑃 of individuals having biallelic non-wild-type variants using the Delta method, which provided an estimated risk of 99.5 affected individuals per 100,000 people (95% CI: 84.8 to 114.2 per 100,000). To validate the assumptions underlying the Delta method, we performed a bootstrap analysis with 10,000 iterations, setting a fixed random seed for reproducibility. The bootstrap results closely matched those of the Delta method, yielding an estimated risk of 104.0 affected individuals per 100,000 people (95% CI: 89.7 to 119.9 per 100,000). This concordance supports the reliability of the Delta method estimates in our dataset.
